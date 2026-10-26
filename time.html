@@ -1,0 +1,533 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chronyx — Own Your Time</title>
+<style>
+:root {
+  --bg: #0b0c12;
+  --panel: #131520;
+  --panel2: #191c2a;
+  --border: #292c3d;
+  --text: #f4f5ff;
+  --muted: #9298b1;
+  --purple: #9884ff;
+  --cyan: #62dff3;
+  --green: #62e6b2;
+  --red: #ff718b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 235px; padding: 26px 17px;
+  border-right: 1px solid var(--border);
+  background: #0e1018; flex-shrink: 0;
+}
+.brand { display: flex; gap: 11px; align-items: center; margin: 0 8px 36px; }
+.logo {
+  display: grid; place-items: center; width: 42px; height: 42px;
+  border-radius: 14px; font-size: 22px; font-weight: 900;
+  background: linear-gradient(135deg, #7863ff, #42d9ed);
+  color: #fff; box-shadow: 0 0 24px #7663ff33;
+}
+.brand h1 { font-size: 20px; letter-spacing: 1px; margin: 0; }
+.brand small { display: block; color: var(--muted); font-size: 10px; margin-top: 4px; letter-spacing: 1px; }
+.nav-label { color: #727992; font-size: 10px; letter-spacing: 1.6px; margin: 25px 10px 10px; }
+.nav {
+  display: flex; width: 100%; gap: 12px; padding: 12px;
+  margin: 4px 0; border: 0; border-radius: 10px;
+  background: transparent; color: var(--muted); text-align: left;
+}
+.nav:hover, .nav.active { background: #25213c; color: white; }
+.nav.active { box-shadow: inset 3px 0 var(--purple); }
+.sidebar-note {
+  margin-top: 40px; padding: 15px; border: 1px solid var(--border);
+  border-radius: 14px; background: var(--panel);
+}
+.sidebar-note p { color: var(--muted); font-size: 12px; line-height: 1.6; }
+main { flex: 1; min-width: 0; padding: 30px clamp(16px, 4vw, 48px); }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+.eyebrow { color: var(--purple); text-transform: uppercase; font-size: 11px; letter-spacing: 2px; }
+h2 { margin: 8px 0; font-size: clamp(24px, 3vw, 34px); }
+.subtitle { color: var(--muted); font-size: 13px; }
+.pill { background: #1b2630; border: 1px solid #2b4548; padding: 9px 12px; border-radius: 30px; color: var(--green); font-size: 12px; white-space: nowrap; }
+.grid { display: grid; gap: 17px; }
+.stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card {
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 17px; padding: 21px; min-width: 0;
+}
+.stat-head { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; gap: 8px; }
+.stat-icon { display: grid; place-items: center; width: 35px; height: 35px; background: #25213c; border-radius: 11px; color: var(--purple); font-size: 17px; }
+.metric { font-size: clamp(25px, 3vw, 34px); font-weight: 750; margin: 17px 0 7px; letter-spacing: -1px; }
+.muted { color: var(--muted); font-size: 12px; }
+.progress { height: 6px; background: #292c3d; border-radius: 20px; overflow: hidden; margin-top: 14px; }
+.progress span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #7864ff, #62dff3); transition: width .3s; }
+.section { margin-top: 28px; }
+.section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+h3 { margin: 0; font-size: 16px; }
+.text-button { border: 0; background: transparent; color: var(--purple); font-size: 12px; }
+.apps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.app-card { padding: 18px; }
+.app-head { display: flex; align-items: center; gap: 10px; }
+.app-icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px; background: var(--panel2); font-size: 21px; }
+.app-name { font-weight: 650; font-size: 14px; }
+.app-category { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.app-time { font-size: 25px; font-weight: 750; margin-top: 23px; }
+.limit-label { display: flex; justify-content: space-between; gap: 6px; color: var(--muted); font-size: 11px; margin-top: 15px; }
+.app-actions { display: flex; gap: 8px; margin-top: 16px; }
+.btn {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 13px; color: var(--text); background: var(--panel2);
+}
+.btn:hover { border-color: var(--purple); }
+.btn.primary { background: var(--purple); color: #100e20; border-color: var(--purple); font-weight: 700; }
+.btn.small { padding: 7px 10px; font-size: 11px; }
+.app-actions .btn { flex: 1; }
+.bottom-grid { grid-template-columns: 1.15fr .85fr; }
+.week-chart { display: flex; align-items: end; justify-content: space-around; gap: 10px; height: 155px; padding-top: 20px; }
+.day { flex: 1; display: flex; height: 100%; align-items: center; justify-content: end; flex-direction: column; gap: 9px; min-width: 0; }
+.bar { width: min(28px, 75%); min-height: 5px; border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, var(--cyan), #7564ff); }
+.day span { font-size: 10px; color: var(--muted); }
+.xp-row { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+.xp-value { font-size: 28px; font-weight: 800; margin: 17px 0 5px; }
+.badge { display: inline-block; padding: 7px 10px; border-radius: 20px; background: #292343; color: #b9aaff; font-size: 11px; margin-top: 14px; }
+.notice { margin-top: 17px; padding: 13px 15px; border: 1px solid #44345c; background: #21192f; border-radius: 12px; font-size: 12px; line-height: 1.6; color: #d6caff; }
+.page { display: none; }
+.page.active { display: block; }
+.field { display: grid; gap: 7px; margin: 16px 0; color: var(--muted); font-size: 12px; }
+.field input, .field select { width: 100%; padding: 12px; background: var(--panel2); border: 1px solid var(--border); border-radius: 9px; color: var(--text); }
+.empty { color: var(--muted); font-size: 13px; line-height: 1.8; }
+.footer { color: #737990; font-size: 11px; margin-top: 30px; line-height: 1.7; }
+@media (max-width: 950px) {
+  .sidebar { width: 190px; }
+  .stats, .apps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bottom-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .app { display: block; }
+  .sidebar { width: 100%; padding: 14px; border-right: 0; border-bottom: 1px solid var(--border); }
+  .brand { margin: 0 5px 13px; }
+  .nav-label, .sidebar-note { display: none; }
+  .navs { display: flex; gap: 5px; overflow-x: auto; }
+  .nav { width: auto; white-space: nowrap; padding: 10px; }
+  main { padding: 22px 14px; }
+  .stats { grid-template-columns: 1fr; }
+  .apps { grid-template-columns: 1fr; }
+  .topbar { align-items: flex-start; }
+  .pill { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">C</div>
+      <div><h1>CHRONYX</h1><small>OWN YOUR TIME</small></div>
+    </div>
+    <div class="nav-label">WORKSPACE</div>
+    <div class="navs">
+      <button class="nav active" data-page="dashboard">◈ Dashboard</button>
+      <button class="nav" data-page="apps">▦ App limits</button>
+      <button class="nav" data-page="insights">⌁ Insights & XP</button>
+      <button class="nav" data-page="settings">⚙ Settings</button>
+    </div>
+    <div class="sidebar-note">
+      <div style="font-size:13px;font-weight:700">Small steps count.</div>
+      <p>Build better digital habits, one day at a time.</p>
+      <div style="color:var(--purple);font-size:11px">CHRONYX v0.1</div>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">Your digital life, decoded</div>
+        <h2 id="page-title">Command Center</h2>
+        <div class="subtitle" id="today"></div>
+      </div>
+      <div class="pill" id="status">● Demo mode</div>
+    </header>
+
+    <section class="page active" id="dashboard">
+      <div class="grid stats">
+        <div class="card">
+          <div class="stat-head"><span>SCREEN TIME TODAY</span><span class="stat-icon">◷</span></div>
+          <div class="metric" id="total-time">0m</div>
+          <div class="muted" id="total-sub">Across tracked sessions</div>
+          <div class="progress"><span id="total-bar"></span></div>
+        </div>
+        <div class="card">
+          <div class="stat-head"><span>DAILY GOAL</span><span class="stat-icon">◎</span></div>
+          <div class="metric" id="goal-time">4h 00m</div>
+          <div class="muted" id="remaining">4h remaining</div>
+          <div class="progress"><span id="goal-bar"></span></div>
+        </div>
+        <div class="card">
+          <div class="stat-head"><span>CHRONYX XP</span><span class="stat-icon">✧</span></div>
+          <div class="metric" id="xp-total">0 XP</div>
+          <div class="muted" id="level">Level 1 · Time Explorer</div>
+          <div class="progress"><span id="xp-bar"></span></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h3>App activity</h3>
+          <button class="text-button" data-go="apps">Manage limits →</button>
+        </div>
+        <div class="grid apps" id="app-list"></div>
+      </div>
+
+      <div class="section">
+        <div class="grid bottom-grid">
+          <div class="card">
+            <div class="section-head"><h3>Weekly overview</h3><span class="muted">Last 7 days</span></div>
+            <div class="week-chart" id="week-chart"></div>
+          </div>
+          <div class="card">
+            <div class="section-head"><h3>Session control</h3><span class="stat-icon">◉</span></div>
+            <div class="muted">Choose an app and start a tracked demo session.</div>
+            <label class="field">Application
+              <select id="session-app"></select>
+            </label>
+            <button class="btn primary" id="session-toggle" style="width:100%">▶ Start session</button>
+            <div class="notice" id="session-notice">Demo tracking is ready. This website cannot detect other Windows apps by itself.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="apps">
+      <div class="card">
+        <div class="section-head"><h3>App limit manager</h3><span class="muted">Daily limits</span></div>
+        <p class="empty">Set a separate daily limit for every app. Changes are saved in this browser.</p>
+        <div id="limits-list"></div>
+        <button class="btn primary" id="add-app" style="margin-top:12px">+ Add app</button>
+      </div>
+    </section>
+
+    <section class="page" id="insights">
+      <div class="grid bottom-grid">
+        <div class="card">
+          <h3>Your weekly insights</h3>
+          <p class="empty" id="insight-text"></p>
+          <div class="section-head" style="margin-top:24px"><h3>Recent activity</h3></div>
+          <div id="history-list" class="empty"></div>
+        </div>
+        <div class="card">
+          <h3>XP & achievements</h3>
+          <div class="xp-value" id="xp-detail">0 XP</div>
+          <div class="muted" id="xp-description">Earn XP by meeting your daily goal.</div>
+          <div class="progress"><span id="xp-detail-bar"></span></div>
+          <div id="achievements"></div>
+          <button class="btn" id="claim-xp" style="margin-top:18px;width:100%">Claim daily check-in XP</button>
+          <p class="empty">Check-in XP can be claimed once per calendar day. It rewards consistency, not low screen time alone.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="settings">
+      <div class="card" style="max-width:600px">
+        <h3>Chronyx settings</h3>
+        <label class="field">Daily screen-time goal (minutes)
+          <input id="goal-input" type="number" min="15" max="1440" step="15" value="240">
+        </label>
+        <label class="field">Your display name
+          <input id="user-input" maxlength="40" placeholder="Time Explorer">
+        </label>
+        <button class="btn primary" id="save-settings">Save settings</button>
+        <button class="btn" id="export-data" style="margin-left:6px">Export data</button>
+        <button class="btn" id="reset-data" style="margin-left:6px">Reset demo</button>
+        <div class="notice">Privacy: this starter saves its data in your browser's local storage. It does not connect to Discord, Epic Games, Nintendo, or any external account.</div>
+      </div>
+    </section>
+
+    <div class="footer">CHRONYX · VERSION 0.1 · LOCAL DEMO<br>
+    Session data is illustrative until connected to a desktop tracking service.</div>
+  </main>
+</div>
+
+<script>
+const STORAGE_KEY = "chronyx-v1";
+const defaults = {
+  goal: 240, username: "Time Explorer", xp: 0,
+  lastClaim: "", activeId: null, sessionStarted: null,
+  history: [], daily: {},
+  apps: [
+    {id:"discord",name:"Discord",icon:"◉",category:"Communication",limit:90},
+    {id:"epic",name:"Epic Games",icon:"🎮",category:"Gaming",limit:120},
+    {id:"browser",name:"Browser",icon:"🌐",category:"Browsing",limit:90}
+  ]
+};
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!saved) return structuredClone(defaults);
+    return {...structuredClone(defaults),...saved,
+      apps: Array.isArray(saved.apps) ? saved.apps : structuredClone(defaults.apps),
+      daily: saved.daily || {}, history: saved.history || []};
+  } catch { return structuredClone(defaults); }
+}
+let state = load();
+let sessionTimer = null;
+const $ = id => document.getElementById(id);
+const todayKey = () => new Date().toLocaleDateString("en-CA");
+function persist() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
+function minutesText(m) {
+  m = Math.max(0, Math.floor(m || 0));
+  return m >= 60 ? `${Math.floor(m/60)}h ${String(m%60).padStart(2,"0")}m` : `${m}m`;
+}
+function dayData(key=todayKey()) {
+  if (!state.daily[key]) state.daily[key] = {};
+  return state.daily[key];
+}
+function appMinutes(appId,key=todayKey()) {
+  const data = state.daily[key] || {};
+  return Number(data[appId] || 0);
+}
+function totalMinutes(key=todayKey()) {
+  return state.apps.reduce((sum,app)=>sum+appMinutes(app.id,key),0);
+}
+function addMinutes(appId, amount) {
+  if (!appId || !Number.isFinite(amount) || amount <= 0) return;
+  const data = dayData();
+  data[appId] = (data[appId] || 0) + amount;
+  persist();
+}
+function levelInfo() {
+  const level = Math.floor(state.xp / 100) + 1;
+  return {level, progress:state.xp % 100};
+}
+function renderHeader() {
+  $("today").textContent = new Date().toLocaleDateString(undefined,
+    {weekday:"long",month:"long",day:"numeric",year:"numeric"});
+  $("status").textContent = state.activeId ? "● Demo session running" : "● Demo mode";
+}
+function renderStats() {
+  const total = totalMinutes(), goal = Math.max(1,Number(state.goal)||240);
+  const remaining = Math.max(0,goal-total);
+  const {level,progress} = levelInfo();
+  $("total-time").textContent = minutesText(total);
+  $("total-sub").textContent = total > goal ? minutesText(total-goal)+" over your goal" : "Across tracked demo sessions";
+  $("total-bar").style.width = Math.min(100,total/goal*100)+"%";
+  $("goal-time").textContent = minutesText(goal);
+  $("remaining").textContent = total >= goal ? "Daily goal reached!" : minutesText(remaining)+" remaining";
+  $("goal-bar").style.width = Math.min(100,total/goal*100)+"%";
+  $("xp-total").textContent = state.xp+" XP";
+  $("level").textContent = `Level ${level} · ${state.username || "Time Explorer"}`;
+  $("xp-bar").style.width = progress+"%";
+}
+function renderApps() {
+  $("app-list").innerHTML = state.apps.map(app=>{
+    const used = appMinutes(app.id), limit = Math.max(1,app.limit);
+    const pct = used/limit*100;
+    const color = pct >= 100 ? "var(--red)" : pct >= 75 ? "#ffcc78" : "var(--purple)";
+    return `<article class="card app-card">
+      <div class="app-head">
+        <div class="app-icon">${escapeHTML(app.icon)}</div>
+        <div><div class="app-name">${escapeHTML(app.name)}</div>
+        <div class="app-category">${escapeHTML(app.category||"Application")}</div></div>
+      </div>
+      <div class="app-time">${minutesText(used)}</div>
+      <div class="limit-label"><span>Daily usage</span><span>${minutesText(limit)} limit</span></div>
+      <div class="progress"><span style="width:${Math.min(100,pct)}%;background:${color}"></span></div>
+      <div class="muted" style="margin-top:9px">${pct>=100?"Daily limit reached":pct>=75?"Approaching your limit":minutesText(limit-used)+" remaining"}</div>
+      <div class="app-actions">
+        <button class="btn small" data-start="${escapeHTML(app.id)}">${state.activeId===app.id?"Selected":"Track"}</button>
+        <button class="btn small" data-edit="${escapeHTML(app.id)}">Edit limit</button>
+      </div>
+    </article>`;
+  }).join("") || '<div class="empty">No apps yet. Add one in App limits.</div>';
+  $("session-app").innerHTML = state.apps.map(a=>
+    `<option value="${escapeHTML(a.id)}" ${a.id===state.activeId?"selected":""}>${escapeHTML(a.name)}</option>`
+  ).join("");
+  if (!state.apps.length) $("session-toggle").disabled = true;
+  else $("session-toggle").disabled = false;
+}
+function renderWeek() {
+  const chart = $("week-chart"), labels = [];
+  for(let i=6;i>=0;i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toLocaleDateString("en-CA");
+    labels.push({key,label:d.toLocaleDateString(undefined,{weekday:"short"}),value:totalMinutes(key)});
+  }
+  const max = Math.max(60,...labels.map(x=>x.value));
+  chart.innerHTML = labels.map(d=>
+    `<div class="day" title="${minutesText(d.value)}">
+      <div class="bar" style="height:${Math.max(4,d.value/max*100)}%"></div>
+      <span>${d.label}</span>
+    </div>`
+  ).join("");
+}
+function renderLimits() {
+  $("limits-list").innerHTML = state.apps.map(app=>`
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) 100px auto;gap:10px;align-items:center;padding:13px 0;border-bottom:1px solid var(--border)">
+      <div><div class="app-name">${escapeHTML(app.icon)} ${escapeHTML(app.name)}</div><div class="muted" style="margin-top:5px">${minutesText(appMinutes(app.id))} used today</div></div>
+      <input aria-label="${escapeHTML(app.name)} daily limit in minutes" data-limit="${escapeHTML(app.id)}" type="number" min="1" max="1440" value="${Number(app.limit)||60}" style="width:100%;padding:9px;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px">
+      <button class="btn small" data-delete="${escapeHTML(app.id)}">Delete</button>
+    </div>`).join("");
+}
+function renderInsights() {
+  const total = totalMinutes(), goal = Number(state.goal)||240;
+  $("insight-text").textContent = total===0
+    ? "No demo usage recorded today. Start a session to begin building your usage history."
+    : `You've recorded ${minutesText(total)} today. ${total<=goal ? "You're within your daily goal. Keep going at a pace that works for you." : "You've passed your daily goal. Consider taking a break if you need one."}`;
+  $("history-list").innerHTML = state.history.length
+    ? state.history.slice(-8).reverse().map(x=>`<div style="padding:10px 0;border-bottom:1px solid var(--border)">${escapeHTML(x.text)}<div class="muted" style="margin-top:4px">${escapeHTML(x.date)}</div></div>`).join("")
+    : "No completed sessions yet.";
+  const {level,progress} = levelInfo();
+  $("xp-detail").textContent = state.xp+" XP";
+  $("xp-description").textContent = `${100-progress} XP until level ${level+1}`;
+  $("xp-detail-bar").style.width = progress+"%";
+  $("achievements").innerHTML = [
+    {name:"First Steps",ok:state.history.length>0,desc:"Complete your first session"},
+    {name:"Goal Setter",ok:state.goal>0,desc:"Set a daily goal"},
+    {name:"XP Collector",ok:state.xp>=100,desc:"Earn 100 XP"}
+  ].map(a=>`<div style="padding:12px 0;border-bottom:1px solid var(--border);font-size:13px">${a.ok?"🏆":"🔒"} ${a.name}<div class="muted" style="margin:5px 0 0 25px">${a.desc}</div></div>`).join("");
+  $("claim-xp").disabled = state.lastClaim===todayKey();
+  $("claim-xp").textContent = state.lastClaim===todayKey()?"✓ Check-in claimed today":"Claim daily check-in XP";
+}
+function renderAll() {
+  renderHeader(); renderStats(); renderApps(); renderWeek(); renderLimits(); renderInsights();
+  $("goal-input").value = state.goal;
+  $("user-input").value = state.username;
+}
+function addHistory(text) {
+  state.history.push({text,date:new Date().toLocaleString()});
+  state.history = state.history.slice(-100);
+}
+function finishSession() {
+  if (!state.activeId || !state.sessionStarted) return;
+  const elapsed = Math.floor((Date.now()-state.sessionStarted)/60000);
+  if (elapsed > 0) {
+    const app = state.apps.find(a=>a.id===state.activeId);
+    addMinutes(state.activeId,elapsed);
+    addHistory(`${app?.name||"App"} · ${minutesText(elapsed)}`);
+    state.xp += Math.min(elapsed,30);
+  }
+  state.activeId=null; state.sessionStarted=null;
+  clearInterval(sessionTimer); sessionTimer=null;
+  persist(); renderAll();
+}
+function startSession(appId) {
+  if (!state.apps.some(a=>a.id===appId)) return;
+  if (state.activeId) finishSession();
+  state.activeId=appId;
+  state.sessionStarted=Date.now();
+  persist();
+  sessionTimer=setInterval(()=>{
+    const app=state.apps.find(a=>a.id===state.activeId);
+    $("session-notice").textContent = app
+      ? `Demo session running for ${app.name}. Keep this page open. Time is recorded when the session ends.`
+      : "Session running.";
+    $("session-toggle").textContent="■ Stop session";
+    renderHeader();
+  },1000);
+  $("session-notice").textContent="Session started. Stop it when you're finished.";
+  $("session-toggle").textContent="■ Stop session";
+  renderAll();
+}
+function navigate(page) {
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===page));
+  document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+  const titles={dashboard:"Command Center",apps:"App limit manager",insights:"Insights & XP",settings:"Settings"};
+  $("page-title").textContent=titles[page]||"Command Center";
+}
+document.addEventListener("click",e=>{
+  const nav=e.target.closest("[data-page]");
+  if(nav) navigate(nav.dataset.page);
+  const go=e.target.closest("[data-go]");
+  if(go) navigate(go.dataset.go);
+  const start=e.target.closest("[data-start]");
+  if(start) {
+    $("session-app").value=start.dataset.start;
+    if(state.activeId===start.dataset.start) finishSession();
+    else startSession(start.dataset.start);
+  }
+  const edit=e.target.closest("[data-edit]");
+  if(edit) {
+    navigate("apps");
+    const input=document.querySelector(`[data-limit="${CSS.escape(edit.dataset.edit)}"]`);
+    if(input) {input.focus();input.scrollIntoView({behavior:"smooth",block:"center"});}
+  }
+  const del=e.target.closest("[data-delete]");
+  if(del) {
+    if(state.activeId===del.dataset.delete) finishSession();
+    const app=state.apps.find(a=>a.id===del.dataset.delete);
+    if(!app || !confirm(`Delete ${app.name}?`)) return;
+    state.apps=state.apps.filter(a=>a.id!==del.dataset.delete);
+    persist();renderAll();
+  }
+});
+$("session-toggle").addEventListener("click",()=>{
+  if(state.activeId) finishSession();
+  else if($("session-app").value) startSession($("session-app").value);
+});
+$("add-app").addEventListener("click",()=>{
+  const name=prompt("Application name?");
+  if(!name||!name.trim()) return;
+  const id="app-"+Date.now();
+  state.apps.push({id,name:name.trim().slice(0,50),icon:"◈",category:"Custom app",limit:60});
+  persist();renderAll();
+});
+$("limits-list").addEventListener("change",e=>{
+  const id=e.target.dataset.limit;
+  if(!id) return;
+  const app=state.apps.find(a=>a.id===id);
+  if(app) {app.limit=Math.max(1,Math.min(1440,Number(e.target.value)||60));persist();renderAll();}
+});
+$("save-settings").addEventListener("click",()=>{
+  state.goal=Math.max(15,Math.min(1440,Number($("goal-input").value)||240));
+  state.username=$("user-input").value.trim().slice(0,40)||"Time Explorer";
+  persist();renderAll();alert("Chronyx settings saved.");
+});
+$("claim-xp").addEventListener("click",()=>{
+  if(state.lastClaim===todayKey()) return;
+  state.lastClaim=todayKey();state.xp+=10;
+  addHistory("Daily check-in · +10 XP");
+  persist();renderAll();
+});
+$("export-data").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download="chronyx-data.json";a.click();URL.revokeObjectURL(url);
+});
+$("reset-data").addEventListener("click",()=>{
+  if(!confirm("Reset all Chronyx demo data? This cannot be undone.")) return;
+  clearInterval(sessionTimer);sessionTimer=null;
+  state=structuredClone(defaults);persist();renderAll();
+});
+$("session-app").addEventListener("change",()=>{
+  if(!state.activeId) $("session-notice").textContent="Selected app ready. Press Start session to begin.";
+});
+window.addEventListener("beforeunload",()=>{
+  if(state.activeId && state.sessionStarted) {
+    const elapsed=Math.floor((Date.now()-state.sessionStarted)/60000);
+    if(elapsed>0) addMinutes(state.activeId,elapsed);
+  }
+});
+renderAll();
+if(state.activeId && state.sessionStarted) {
+  // Recover a session if the page was refreshed.
+  state.activeId=null;state.sessionStarted=null;persist();renderAll();
+}
+</script>
+</body>
+</html>
